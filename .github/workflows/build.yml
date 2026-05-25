@@ -18,7 +18,7 @@ jobs:
     - name: Set up Python
       uses: actions/setup-python@v5
       with:
-        python-python-version: '3.10'
+        python-version: '3.10' # Typo fixed here!
 
     - name: Install Buildozer Dependencies
       run: |
@@ -29,7 +29,6 @@ jobs:
     - name: Prepare main.py entry point
       run: cp CherryStudioApp.py main.py
 
-    # This runs buildozer directly on the Linux runner instead of a broken Docker image
     - name: Build with Buildozer
       run: |
         export PATH=$PATH:~/.local/bin
