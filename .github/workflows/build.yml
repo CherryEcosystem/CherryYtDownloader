@@ -1,1 +1,31 @@
+name: Build Android APK
 
+on:
+  push:
+    branches: [ "main" ]
+  pull_request:
+    branches: [ "main" ]
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout Code
+      uses: actions/checkout@v4
+
+    - name: Prepare main.py entry point
+      run: cp CherryStudioApp.py main.py
+
+    - name: Buildozer Action
+      uses: ArtemSBulgakov/buildozer-action@v1.2.0
+      with:
+        workdir: .
+        buildozer_version: master
+
+    - name: Upload APK Artifact
+      uses: actions/upload-artifact@v4
+      with:
+        name: CherryDownloader-APK
+        path: bin/*.apk
