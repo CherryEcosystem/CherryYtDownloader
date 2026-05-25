@@ -18,7 +18,7 @@ jobs:
     - name: Prepare main.py entry point
       run: cp CherryStudioApp.py main.py
 
-    - name: Buildozer Action
+    - name: Buildozer action
       uses: ArtemSBulgakov/buildozer-action@v1.2.0
       with:
         workdir: .
