@@ -18,16 +18,62 @@ jobs:
     - name: Set up Python
       uses: actions/setup-python@v5
       with:
-        python-version: '3.10' # Typo fixed here!
+        python-version: '3.10'
 
-    - name: Install Buildozer Dependencies
+    - name: Install System Dependencies
       run: |
         sudo apt update
-        sudo apt install -y git zip unzip openjdk-17-jdk python3-pip autoconf libtool pkg-config zlib1g-dev libncurses5-dev libgdbm-dev libnss3-dev libssl-dev libreadline-dev libffi-dev libsqlite3-dev tk-dev libgdbm-compat-dev liblzma-dev lzma
+        sudo apt install -y \
+          git zip unzip openjdk-17-jdk python3-pip \
+          autoconf libtool pkg-config zlib1g-dev \
+          libncurses5-dev libgdbm-dev libnss3-dev \
+          libssl-dev libreadline-dev libffi-dev \
+          libsqlite3-dev libgdbm-compat-dev \
+          liblzma-dev lzma tk-dev
         pip3 install --user buildozer cython virtualenv
+        echo "$HOME/.local/bin" >> $GITHUB_PATH
 
     - name: Prepare main.py entry point
       run: cp CherryStudioApp.py main.py
+
+    - name: Generate buildozer.spec
+      run: |
+        cat > buildozer.spec << 'EOF'
+        [app]
+        title = CherryDownloader
+        package.name = cherrydownloader
+        package.domain = org.cherryecosystem
+        source.dir = .
+        source.include_exts = py,png,jpg,kv,atlas
+        version = 1.0
+        requirements = python3,kivy,yt-dlp,requests,certifi,charset-normalizer,idna,urllib3,mutagen,pycparser,cffi,websockets,brotli
+        orientation = portrait
+        osx.python_version = 3
+        osx.kivy_version = 1.9.1
+        fullscreen = 0
+        android.permissions = INTERNET,WRITE_EXTERNAL_STORAGE,READ_EXTERNAL_STORAGE
+        android.api = 33
+        android.minapi = 21
+        android.ndk = 25b
+        android.sdk = 33
+        android.accept_sdk_license = True
+        android.arch = arm64-v8a
+        android.allow_backup = True
+        log_level = 2
+        warn_on_root = 1
+
+        [buildozer]
+        log_level = 2
+        warn_on_root = 1
+        EOF
+
+    - name: Accept Android SDK Licenses
+      run: |
+        export PATH=$PATH:~/.local/bin
+        mkdir -p ~/.android
+        touch ~/.android/repositories.cfg
+        yes | buildozer android debug 2>&1 | head -5 || true
+        find ~/.buildozer -name "sdkmanager" 2>/dev/null | head -1 | xargs -I{} sh -c 'yes | {} --licenses' || true
 
     - name: Build with Buildozer
       run: |
